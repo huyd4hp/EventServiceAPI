@@ -1,8 +1,6 @@
-from sqlalchemy import Column,BigInteger,SmallInteger,Float,Date,Time,Enum,ForeignKey,UniqueConstraint,CheckConstraint,String,Text
+from sqlalchemy import Column,BigInteger,SmallInteger,Float,Date,Time,Enum,ForeignKey,UniqueConstraint,CheckConstraint,String,Text,DateTime
 from sqlalchemy.orm import DeclarativeBase
-from datetime import datetime
-import datetime as DT
-
+from sqlalchemy import func
 import enum
 
 class Base(DeclarativeBase):
@@ -14,10 +12,6 @@ class SeatStatus(enum.Enum):
     PENDING = "Pending"
     CANCELLED = "Cancelled"
 
-# Ghế 1 chưa được đặt 
-# User đặt ghế 1 -> Lưu vào redis
-# User 2 đặt ghế 1 -> có trong redis -> return Seat is booking
-
 class Event(Base):
     __tablename__ = "Event"
     
@@ -28,6 +22,7 @@ class Event(Base):
     start_date = Column(Date)
     end_date = Column(Date)
     owner = Column(String(255),nullable=False) 
+    owner_name = Column(String(255),default=None)
 
     __table_args__ = (
         CheckConstraint('end_date >= start_date', name='event_date_check'),
@@ -97,7 +92,7 @@ class FeedBack(Base):
     id = Column(BigInteger,primary_key=True,index=True,autoincrement=True)
     content = Column(Text,nullable=False)
     star = Column(SmallInteger)
-    created_at = Column(Date,default=DT.UTC)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     owner = Column(String(255),nullable=False)
     event = Column(BigInteger,ForeignKey("Event.id",ondelete="CASCADE"))
 
