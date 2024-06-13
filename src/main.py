@@ -4,18 +4,18 @@ from core import settings
 from core.database.mysql import Base,Engine
 from api.router import AppRouter
 from api.auth.middleware import ExceptionHandlerMiddleware
-from core.kafka import KafkaClient
+from core.kafka import KafkaConsumer
 import asyncio
 # Lifespan
 async def lifespan(app:FastAPI):
-    kafka = KafkaClient(
+    Consumer = KafkaConsumer(
         KAFKA_BOOTSTRAP_SERVERS=settings.KAFKA_BOOTSTRAP_SERVERS,
         TOPIC=["booking","user"],
     )
-    await kafka.connect()
-    asyncio.create_task(kafka.run())
+    await Consumer.connect()
+    asyncio.create_task(Consumer.run())
     yield
-    await kafka.close() 
+    await Consumer.close() 
 # App
 app = FastAPI(
     title=settings.APP_TITLE,
