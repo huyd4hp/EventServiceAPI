@@ -106,8 +106,8 @@ class Voucher(Base):
     id = Column(BigInteger,primary_key=True,index=True,autoincrement=True)
     name = Column(String(255),nullable=False)
     remaining = Column(SmallInteger,nullable=False,default=0)
-    discount_percent = Column(Float)
-    discount_max = Column(Float)
+    discount_percent = Column(Float,nullable=False)
+    discount_max = Column(Float,nullable=False)
     event = Column(BigInteger,ForeignKey("Event.id",ondelete="CASCADE"))
 
     __table_args__ = (
