@@ -8,14 +8,12 @@ from typing import List
 class ShowService:
     def __init__(self,db:Session):
         self.db = db
-    def all(self,Owner_ID:int = None,Event_ID:int=None,Date:date=None) -> List[ShowView]:
+    def all(self,Owner_ID:int = None,Event_ID:int=None) -> List[ShowView]:
         query = self.db.query(Show).join(Event,Show.event==Event.id)
         if Owner_ID:
             query = query.filter(Event.owner == Owner_ID)
         if Event_ID:
             query = query.filter(Event.id == Event_ID)
-        if Date:
-            query = query.filter(Show.date == Date)
         metadata = [ShowView.model_validate(Show) for Show in query.all()]
         return jsonable_encoder(metadata)
     
