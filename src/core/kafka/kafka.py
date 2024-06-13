@@ -1,15 +1,14 @@
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
-from typing import Any
-from core.database.mysql import async_get_db
-from api.service import SeatService,SeatTypeService,EventService
-import json
+from typing import Any,List
+import asyncio
+
 class KafkaClient:
-    def __init__(self,KAFKA_BOOTSTRAP_SERVERS:Any,TOPIC:Any):
+    def __init__(self,KAFKA_BOOTSTRAP_SERVERS:str,TOPIC:List[Any]):
         self.producer = AIOKafkaProducer(
             bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS
         )
         self.consumer = AIOKafkaConsumer(
-            TOPIC,
+            *TOPIC,
             bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,  
             group_id='my_group_id'
         )
@@ -19,29 +18,22 @@ class KafkaClient:
     async def close(self):
         await self.producer.stop()
         await self.consumer.stop()      
-    async def run(self):
-        async for msg in self.consumer:
-            async with async_get_db() as db:
-                Seat = SeatService(db).find(msg.value.decode())
-                if Seat:
-                    SeatType = SeatTypeService(db).findByID(Seat.get("type"))
-                    Event = EventService(db).find(SeatType.get("event"))
 
-                    seat_detail = Seat
-                    seat_detail['type'] = SeatType
-                    seat_detail['event'] = Event
-                    await self.producer.send_and_wait(
-                        topic='seat-detail',
-                        key=msg.value,
-                        value = json.dumps(seat_detail).encode()
-                    )
-                else:
-                    await self.producer.send_and_wait(
-                        topic='seat-detail',
-                        key=msg.value,
-                        value=None
-                    )
-                print(f"Seat: {Seat}")
+    async def __handle_booking__(self):
+        async for msg in self.consumer:
+            if msg.topic == "booking":
+                print(msg)
+
+    async def __handle_user__(self):
+        async for msg in self.consumer:
+            if msg.topic == "user":
+                print(msg)
+
+    async def run(self):
+        await asyncio.gather(
+            self.__handle_user__(),
+            self.__handle_booking__(),
+        )
 
 
 
