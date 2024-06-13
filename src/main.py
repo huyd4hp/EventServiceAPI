@@ -10,7 +10,7 @@ import asyncio
 async def lifespan(app:FastAPI):
     kafka = KafkaClient(
         KAFKA_BOOTSTRAP_SERVERS=settings.KAFKA_BOOTSTRAP_SERVERS,
-        TOPIC="booking",
+        TOPIC=["booking","user"],
     )
     await kafka.connect()
     asyncio.create_task(kafka.run())
