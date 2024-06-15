@@ -7,10 +7,10 @@ class VoucherService:
     def __init__(self,db:Session):
         self.db = db
 
-    def all(self,Owner_ID:int = None,Event_ID:int=None)-> List[VoucherView]:
+    def all(self,Manager_ID:int = None,Event_ID:int=None)-> List[VoucherView]:
         query = self.db.query(Voucher).join(Event,Voucher.event == Event.id)
-        if Owner_ID:
-            query = query.filter(Event.owner==Owner_ID)
+        if Manager_ID:
+            query = query.filter(Event.owner==Manager_ID)
         if Event_ID:
             query = query.filter(Event.id==Event_ID)
         metadata = [VoucherView.model_validate(V) for V in query.all()]

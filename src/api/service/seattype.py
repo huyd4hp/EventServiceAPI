@@ -8,13 +8,13 @@ class SeatTypeService:
     def __init__(self,db:Session):
         self.db = db
 
-    def all(self,Owner_ID:int=None,Event_ID:int=None) -> List[SeatTypeView]: 
+    def all(self,Manager_ID:str=None,Event_ID:int=None) -> List[SeatTypeView]: 
         ''' Danh sách SeatType thuộc quản lí của User '''
         query = self.db.query(SeatType).join(Event,SeatType.event == Event.id)
         if Event_ID:
             query = query.filter(SeatType.event == Event_ID)
-        if Owner_ID:
-            query = query.filter(Event.owner == Owner_ID)
+        if Manager_ID:
+            query = query.filter(Event.owner == Manager_ID)
         metadata = [SeatTypeView.model_validate(obj) for obj in query.all()]
         return jsonable_encoder(metadata)
     
