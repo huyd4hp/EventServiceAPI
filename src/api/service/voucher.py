@@ -7,7 +7,7 @@ class VoucherService:
     def __init__(self,db:Session):
         self.db = db
 
-    def all(self,Manager_ID:int = None,Event_ID:int=None)-> List[VoucherView]:
+    def all(self,Manager_ID:str = None,Event_ID:int=None)-> List[VoucherView]:
         query = self.db.query(Voucher).join(Event,Voucher.event == Event.id)
         if Manager_ID:
             query = query.filter(Event.owner==Manager_ID)

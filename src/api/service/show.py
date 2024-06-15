@@ -8,7 +8,7 @@ from typing import List
 class ShowService:
     def __init__(self,db:Session):
         self.db = db
-    def all(self,Manager_ID:int,Event_ID:int,Date:date=None) -> List[ShowView]:
+    def all(self,Manager_ID:str=None,Event_ID:int=None,Date:date=None) -> List[ShowView]:
         query = self.db.query(Show).join(Event)
         if Manager_ID:
             query = query.filter(Event.owner == Manager_ID)

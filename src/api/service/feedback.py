@@ -4,10 +4,11 @@ from api.schema import FeedbackView,FeedbackUpdate,FeedbackCreate
 from fastapi.encoders import jsonable_encoder
 from typing import List
 class FeedbackService:
+    
     def __init__(self,db:Session):
         self.db = db
 
-    def all(self,Manager_ID:str,Event_ID:int) -> List[FeedbackView]:
+    def all(self,Manager_ID:str=None,Event_ID:int=None) -> List[FeedbackView]:
         query = self.db.query(FeedBack).join(Event,FeedBack.event == Event.id)
         if Manager_ID:
             query = query.filter(Event.owner == Manager_ID)
@@ -34,10 +35,14 @@ class FeedbackService:
         instance = self.db.query(FeedBack).filter(FeedBack.id == ID).first()
         return jsonable_encoder(FeedbackView.model_validate(instance))
 
-    def add(self,Feedback:FeedbackCreate):
-        fb = FeedBack(**FeedBack)
+    def add(self,Owner_ID:str, Feedback:FeedbackCreate) -> FeedbackView:
+        fb = FeedBack(**Feedback.model_dump())
+        fb.owner = Owner_ID
         self.db.add(fb)
         self.db.commit()
+        instance = self.db.query(FeedBack).filter(FeedBack.id == fb.id).first()
+        return jsonable_encoder(FeedbackView.model_validate(instance))
+
         
     def delete(self,Feedback_ID:int) -> int:
         instance = self.db.query(FeedBack).filter(FeedBack.id == Feedback_ID).first()

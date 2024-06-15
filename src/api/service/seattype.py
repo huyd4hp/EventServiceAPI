@@ -20,8 +20,9 @@ class SeatTypeService:
     
     
     def find(self,ID:int) -> SeatTypeView | None:
-        '''Tìm SeatType bằng ID,Type'''
-        data = self.db.query(SeatType).filter(SeatType.id == ID).first()
+        data = self.db.query(SeatType).filter_by(id = ID).first()
+        if data is None:
+            return None
         return jsonable_encoder(SeatTypeView.model_validate(data)) 
 
     def add(self,SeatTypeInfo:SeatTypeCreate) -> SeatTypeView:

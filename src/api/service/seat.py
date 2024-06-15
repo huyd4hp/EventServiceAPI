@@ -8,7 +8,7 @@ class SeatService:
     def __init__(self,db:Session):
         self.db = db
         
-    def all(self,Manager_ID:int=None,Type:int=None,Code:str="",Status:str=None) -> List[SeatView]:
+    def all(self,Manager_ID:str=None,Type:int=None,Code:str="",Status:str=None) -> List[SeatView]:
         '''Tất cả Seat'''
         query = self.db.query(Seat).join(SeatType,Seat.type == SeatType.id).join(Event,Event.id == SeatType.event)
         if Manager_ID:

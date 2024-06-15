@@ -15,10 +15,12 @@ class EventService:
         if event is None:
             return 
         shows = self.db.query(Show).filter(Show.event == Event_ID).all()
-        if shows is None:
-            return 
-        event.start_date = min(show.date for show in shows)
-        event.end_date = max(show.date for show in shows)
+        if len(shows) == 0:
+            event.start_date = None
+            event.end_date = None
+        else:
+            event.start_date = min(show.date for show in shows)
+            event.end_date = max(show.date for show in shows)
         self.db.commit()
     
     def all(self,

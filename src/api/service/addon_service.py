@@ -8,10 +8,10 @@ class AddonService:
     def __init__(self,db:Session):
         self.db = db
 
-    def all(self,Owner_ID:int = None,Event_ID:int = None) -> List[AddonView]:
+    def all(self,Manager_ID:str = None,Event_ID:int = None) -> List[AddonView]:
         query = self.db.query(AddonTable).join(Event,AddonTable.event == Event.id)
-        if Owner_ID:
-            query = query.filter(Event.owner==Owner_ID)
+        if Manager_ID:
+            query = query.filter(Event.owner==Manager_ID)
         if Event_ID:
             query = query.filter(AddonTable.event==Event_ID)
         metadata = [AddonView.model_validate(V) for V in query.all()]
