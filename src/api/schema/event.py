@@ -1,6 +1,7 @@
 from datetime import date
 from pydantic import BaseModel
-from typing import Optional,List
+from fastapi import Query
+from typing import Optional
 
 class EventView(BaseModel):
     id: int
@@ -27,7 +28,7 @@ class EventCreate(BaseModel):
     about: Optional[str] = None
     location: str
 
-
-
-
-
+class EventQuery(BaseModel):
+    page: Optional[int] = Query(1, alias='page')
+    limit: Optional[int] = Query(10, alias='limit')
+    offset: Optional[int] = Query(0, alias='offset')

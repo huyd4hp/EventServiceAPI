@@ -20,6 +20,8 @@ class ShowCreate(BaseModel):
     start: time
     end: time
     event: int
+    class Config:
+        from_attributes = True
 
 class ShowUpdate(BaseModel):
     name: Optional[str] = None
