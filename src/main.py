@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 from core import settings
 from core.database.mysql import Base,Engine
-from api.router import ManageRouter,ViewRouter
+from api.router import ManageRouter,UserRouter
 from api.auth.middleware import ExceptionHandlerMiddleware
 from core.kafka import KafkaClient
 import asyncio
@@ -22,7 +22,7 @@ app = FastAPI(
     debug=settings.APP_DEBUG,
     version=settings.APP_VERSION,
     root_path="/api/v1",
-    docs_url="/docs",
+    docs_url="/",
     lifespan=lifespan,
 )
 # Database
@@ -33,7 +33,7 @@ app.include_router(
     prefix = "/manage",
 )
 app.include_router(
-    router = ViewRouter,
+    router = UserRouter,
     prefix = "",
 )
 # Handle Error
