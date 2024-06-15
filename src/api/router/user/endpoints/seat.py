@@ -20,7 +20,7 @@ def view_seat(Event_ID:int,db = Depends(get_db)):
     )
     LstSeats = []
     for st in seattypes:
-        LstSeats.append(SeatService(db).all(Owner_ID=event['owner'],Type=st.get("id")))
+        LstSeats.append(SeatService(db).all(Manager_ID=event['owner'],Type=st.get("id")))
     return Response(
         metadata = LstSeats
     )
@@ -31,7 +31,10 @@ def view_seat(Seat_ID:int, db = Depends(get_db)):
     if seat is None:
         raise HTTP_404_NOT_FOUND("Seat Not Found")
     seattype = SeatTypeService(db).find(seat.get("type"))
-    seat['type'] = seattype
+    seat['type'] = seattype['type']
+    seat['price'] = seattype['price']
+    seat['event'] = seattype['event']
+
     return Response(
         metadata = seat    
     )

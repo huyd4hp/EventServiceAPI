@@ -52,6 +52,8 @@ def delete_show(Show_ID:int,user = Depends(ManagementUser), db = Depends(get_db)
 @ShowRouter.post("/show",response_model=ShowView)
 def create_show(Information:ShowCreate,user = Depends(ManagementUser), db = Depends(get_db)):
     event = EventService(db).find(Information.event)
+    if event is None:
+        raise HTTP_404_NOT_FOUND("Event Not Found")
     if user.get("role") != "Admin" and user.get("_id") != event.get("owner"):
         raise HTTP_403_FORBIDDEN("Access Forbidden")
     shows = ShowService(db).all(Manager_ID = user.get("_id"),Event_ID = Information.event)
@@ -84,14 +86,16 @@ def update_show(Show_ID:int, Form:ShowUpdate,user = Depends(ManagementUser), db 
     
     UpdateName = Form.name if Form.name else show.get("name")
     UpdateDate = Form.date if Form.date else show.get("date")
-    UpdateStart = Form.start if Form.start else show.get("start")
-    UpdateEnd = Form.end if Form.end else show.get("end")
+    UpdateStart = Form.start if Form.start else datetime.strptime(show.get("start"), "%H:%M:%S").time()
+    UpdateEnd = Form.end if Form.end else datetime.strptime(show.get("end"), "%H:%M:%S").time()
 
     shows = ShowService(db).all(
         Manager_ID = event.get("owner"),
         Event_ID = event.get("id")
     )
     for show in shows:
+        if show.get("id") == Show_ID:
+            continue
         if show.get("name").lower() == UpdateName.lower():
             raise HTTP_409_CONFLICT(f"Show Name Existed (Conflict ID:{show.get("id")})")
     shows = ShowService(db).all(
@@ -100,6 +104,8 @@ def update_show(Show_ID:int, Form:ShowUpdate,user = Depends(ManagementUser), db 
         Date = UpdateDate,
     )
     for show in shows:
+        if show.get("id") == Show_ID:
+            continue
         if not (UpdateEnd <= datetime.strptime(show.get("start"), "%H:%M:%S").time() 
                 or 
                 datetime.strptime(show.get("end"), "%H:%M:%S").time() <= UpdateStart):

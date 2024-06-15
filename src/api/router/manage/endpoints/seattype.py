@@ -27,9 +27,9 @@ def manage_seat_types(
         metadata=metadata,
     )
 
-@SeatTypeRouter.get("/seattype/{SeatType_ID}",response_model=SeatTypeView)
+@SeatTypeRouter.get("/seattype/{SeatType_ID}")#,response_model=SeatTypeView)
 def view_seat_type(SeatType_ID:int,user = Depends(ManagementUser), db = Depends(get_db)):
-    SeatType = SeatTypeService(db).find(ID=SeatType_ID)
+    SeatType = SeatTypeService(db).find(SeatType_ID)
     if SeatType is None:
         raise HTTP_404_NOT_FOUND("SeatType Not Found")
     Event = EventService(db).find(SeatType.get("event"))
@@ -49,7 +49,7 @@ def create_seat_type(Information:SeatTypeCreate,user = Depends(ManagementUser), 
     SeatTypeTable = SeatTypeService(db)
     if user.get("role") != "Admin" and user.get("_id") != Event['owner']:
         raise HTTP_403_FORBIDDEN("Access Forbidden")
-    for e in SeatTypeTable.all(Owner_ID=Event['owner'],Event_ID=Event['id']):
+    for e in SeatTypeTable.all(Manager_ID=Event['owner'],Event_ID=Event['id']):
         if e['type'].lower() == Information.type.lower():
             raise HTTP_409_CONFLICT("SeatType Existed")
     NewST = SeatTypeTable.add(Information)

@@ -21,10 +21,10 @@ def list_type(Event_ID:int,db = Depends(get_db)):
         )
     )
 
-@SeatTypeRouter.get("/seattype/{ID}")
+@SeatTypeRouter.get("/seattype/{SeatType_ID}")
 def view_type(SeatType_ID:int,db= Depends(get_db)):
     instance = SeatTypeService(db).find(SeatType_ID)
-    if instance:
+    if instance is None:
         raise HTTP_404_NOT_FOUND("Not Found")
     return Response(
         metadata = instance

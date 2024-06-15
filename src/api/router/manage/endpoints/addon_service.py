@@ -16,7 +16,8 @@ AddonServiceRouter = APIRouter(
 @AddonServiceRouter.get('/addon-services',response_model=AddonView)
 def manage_addon_services(event = Query(None),user = Depends(ManagementUser), db = Depends(get_db)):
     metadata = AddonService(db).all(
-        Owner_ID = None if user.get("role") == "Admin" else user.get("_id"),
+        Manager_ID = None if user.get("role") == "Admin" else user.get("_id"),
+        
         Event_ID = event,
     )
     return Response(

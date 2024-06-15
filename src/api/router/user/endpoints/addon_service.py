@@ -9,19 +9,19 @@ AddonRouter = APIRouter(
     ]
 )
 
-@AddonRouter.get("/addon-services/{Event_ID}")
+@AddonRouter.get("/addons/{Event_ID}")
 def view_addon_services(Event_ID:int,db = Depends(get_db)):
     event = EventService(db).find(Event_ID)
     if event is None:
         raise HTTP_404_NOT_FOUND("Event Not Found")
     return Response(
         metadata=AddonService(db).all(
-            Owner_ID=event['owner'],
+            Manager_ID=event['owner'],
             Event_ID=event['id']
         )
     )
 
-@AddonRouter.get("/addon-service/{Addon_ID}")
+@AddonRouter.get("/addon/{Addon_ID}")
 def view_addon_services(Addon_ID:int,db = Depends(get_db)):
     addon = AddonService(db).find(Addon_ID)
     if addon is None:

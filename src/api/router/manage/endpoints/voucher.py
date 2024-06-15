@@ -50,7 +50,7 @@ def create_voucher(
         raise HTTP_404_NOT_FOUND("Event Not Found")
     if enstance.get("owner") != user.get("_id") and user.get("role") != "Admin":
         raise HTTP_403_FORBIDDEN("Access Forbidden")
-    for voucher in VoucherService(db).all(Owner_ID = enstance.get("owner"),Event_ID = enstance.get("id")):
+    for voucher in VoucherService(db).all(Manager_ID = enstance.get("owner"),Event_ID = enstance.get("id")):
         if voucher.get("name").lower() == Information.name.lower():
             raise HTTP_409_CONFLICT(f"VoucherName Existed (Conflict {voucher.get("id")})")
     NewVoucher = VoucherService(db).add(Information)

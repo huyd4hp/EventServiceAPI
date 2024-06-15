@@ -29,8 +29,8 @@ def list_events(Form:EventQuery = Depends(),db = Depends(get_db)):
         price= []
         for st in seattypes:
             price.append(st.get("price"))
-            event['attendates'] += len(SeatService(db).all(Owner_ID= event['owner'],Type = st['id'],Status = 'Ordered'))
-            event['left'] += len(SeatService(db).all(Owner_ID= event['owner'],Type = st['id'],Status = 'NOT_ORDERED'))
+            event['attendates'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'Ordered'))
+            event['left'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'NOT_ORDERED'))
 
         event['show'] = ShowService(db).all(Manager_ID = event['owner'],Event_ID = event['id'])
         if len(price) == 1 and 0 in price:
@@ -60,8 +60,8 @@ def view_event(Event_ID:int,db = Depends(get_db)):
     price= []
     for st in seattypes:
         price.append(st.get("price"))
-        event['attendates'] += len(SeatService(db).all(Owner_ID= event['owner'],Type = st['id'],Status = 'Ordered'))
-        event['left'] += len(SeatService(db).all(Owner_ID= event['owner'],Type = st['id'],Status = 'NOT_ORDERED'))
+        event['attendates'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'Ordered'))
+        event['left'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'NOT_ORDERED'))
 
     event['show'] = ShowService(db).all(Manager_ID = event['owner'],Event_ID = event['id'])
     if len(price) == 1 and 0 in price:
