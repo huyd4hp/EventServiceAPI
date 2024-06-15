@@ -1,17 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional,List
-class SeatTypeView(BaseModel):
-    id: int
-    type : str
-    price : float
-    event : int
-    class Config:
-        from_attributes = True
-
-class SeatTypeUpdate(BaseModel):
-    type: str
-    price: float
-
+from typing import Optional,Literal
 class SeatDelete(BaseModel):
     ids: list
     class Config:
@@ -19,6 +7,7 @@ class SeatDelete(BaseModel):
         
 class SeatCreate(BaseModel):
     code: str
+    type: int
     count: Optional[int] = 1
     class Config:
         from_attributes = True
@@ -32,18 +21,11 @@ class SeatView(BaseModel):
     class Config:
         from_attributes = True
 
-class SeatTypeDetail(BaseModel):
-    id: int
-    type : str
-    price : float
-    event : int
-    seats: Optional[List[SeatView]] = []
+
+class SeatUpdate(BaseModel):
+    status: Optional[Literal["NOT_ORDERED", "ORDERED", "PENDING","CANCELLED"]] = None
+    owner: Optional[str] = None
+
     class Config:
         from_attributes = True
 
-class SeatTypeCreate(BaseModel):
-    type: str
-    price: float
-    event: int
-    class Config:
-        from_attributes = True

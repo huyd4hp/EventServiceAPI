@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
+from typing import Optional
 
 class FeedbackView(BaseModel):
     id: int
@@ -16,4 +17,5 @@ class FeedbackCreate(BaseModel):
     event: int 
 
 class FeedbackUpdate(BaseModel):
-    content: str
+    content: Optional[str] = None
+    star: Optional[float] = None

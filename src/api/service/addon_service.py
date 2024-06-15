@@ -17,32 +17,25 @@ class AddonService:
         metadata = [AddonView.model_validate(V) for V in query.all()]
         return jsonable_encoder(metadata)
     
-    def find(self,Name:str,Event_ID:int) -> AddonView | None:
-        obj = self.db.query(AddonTable).filter(AddonTable.name == Name, AddonTable.event == Event_ID).first()
-        if obj is None:
+    def find(self,Addon_ID:int) -> AddonView | None:
+        instance = self.db.query(AddonTable).filter(AddonTable.id == Addon_ID).first()
+        if instance is None:
             return None
-        return jsonable_encoder(AddonView.model_validate(obj))
+        return jsonable_encoder(AddonView.model_validate(instance))
     
-    def findByID(self,Service_ID:int) -> AddonView | None:
-        obj = self.db.query(AddonTable).filter(AddonTable.id == Service_ID).first()
-        if obj is None:
-            return None
-        return jsonable_encoder(AddonView.model_validate(obj))
+        
+    
+
     
     def add(self,AddonInfo:AddonCreate):
-        obj = AddonTable(**AddonInfo.model_dump())
-        self.db.add(obj)
-        try:
-            self.db.commit()
-            obj = self.db.query(AddonTable).filter(AddonTable.name == AddonInfo.name, AddonTable.event == AddonInfo.event).first()
-            return jsonable_encoder(AddonView.model_validate(obj))
-        except:
-            return None
+        instance = AddonTable(**AddonInfo.model_dump())
+        self.db.add(instance)
+        self.db.commit()
+        instance = self.db.query(AddonTable).filter(AddonTable.name == AddonInfo.name, AddonTable.event == AddonInfo.event).first()
+        return jsonable_encoder(AddonView.model_validate(instance))
     
-    def update(self,Service_ID:int,AddonInfo:AddonUpdate) -> AddonView | None:
-        obj = self.db.query(AddonTable).filter(AddonTable.id == Service_ID).first()
-        if obj is None:
-            return None
+    def update(self,Addon_ID:int,AddonInfo:AddonUpdate) -> AddonView:
+        obj = self.db.query(AddonTable).filter(AddonTable.id == Addon_ID).first()
         if AddonInfo.name is not None:
             obj.name = AddonInfo.name
         if AddonInfo.available is not None:
@@ -51,18 +44,13 @@ class AddonService:
             obj.description = AddonInfo.description
         if AddonInfo.price is not None:
             obj.price = AddonInfo.price
-        try:
-            self.db.commit()
-            data = self.db.query(AddonTable).filter(AddonTable.id == Service_ID).first()
-            metadata = jsonable_encoder(AddonView.model_validate(data))
-            return metadata
-        except:
-            return None
-    def delete(self,Service_ID):
-        obj = self.db.query(AddonTable).filter_by(id=Service_ID).first()
-        self.db.delete(obj)
-        try:
-            self.db.commit()
-            return Service_ID
-        except:
-            return None
+        self.db.commit()
+        data = self.db.query(AddonTable).filter(AddonTable.id == Addon_ID).first()
+        metadata = jsonable_encoder(AddonView.model_validate(data))
+        return metadata
+        
+    def delete(self,Addon_ID):
+        instance = self.db.query(AddonTable).filter_by(id=Addon_ID).first()
+        self.db.delete(instance)
+        self.db.commit()
+        return Addon_ID

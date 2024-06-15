@@ -1,6 +1,7 @@
 from datetime import date
 from pydantic import BaseModel
-from typing import Optional,List
+from fastapi import Query
+from typing import Optional
 
 class EventView(BaseModel):
     id: int
@@ -10,35 +11,11 @@ class EventView(BaseModel):
     start_date: Optional[date] 
     end_date: Optional[date] 
     owner: str
+    owner_name: Optional[str] = None
     class Config:
         from_attributes = True
 
-class EventDetail(BaseModel):
-    id: int
-    name: str
-    about: Optional[str]
-    location: str
-    start_date: Optional[date] 
-    end_date: Optional[date] 
-    seat: Optional[List] = []
-    addon: Optional[List] = []
-    agenda: Optional[List] = []
-    voucher: Optional[List] = []
-    rating: Optional[float] = 0
-    owner: str
-    
-    class Config:
-        from_attributes = True
-
-class EventPut(BaseModel):
-    name: str
-    about: str
-    location: str
-
-    class Config:
-        from_attributes = True
-
-class EventPatch(BaseModel):
+class EventUpdate(BaseModel):
     name: Optional[str] = None
     about: Optional[str] = None
     location: Optional[str] = None
@@ -50,8 +27,8 @@ class EventCreate(BaseModel):
     name: str
     about: Optional[str] = None
     location: str
-    class Config:
-        from_attributes = True
 
-
-
+class EventQuery(BaseModel):
+    page: Optional[int] = Query(1, alias='page')
+    limit: Optional[int] = Query(10, alias='limit')
+    offset: Optional[int] = Query(0, alias='offset')
