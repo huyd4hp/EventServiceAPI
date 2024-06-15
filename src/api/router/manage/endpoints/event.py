@@ -20,7 +20,7 @@ def manage_events(
     start_date = Query(None),
 ):
     metadata = EventService(db).all(
-        Owner_ID= None if user.get("role") == "Admin" else user.get("_id"),
+        Manager_ID = None if user.get("role") == "Admin" else user.get("_id"),
         Name=name,
         Location=location,
         Start_Date=start_date,

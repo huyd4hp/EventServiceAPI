@@ -21,7 +21,7 @@ def manage_seat(
     status=Query(None)
 ):
     metadata = SeatService(db).all(
-        Owner_ID = None if user.get("role") == "Admin" else user.get("_id"),
+        Manager_ID = None if user.get("role") == "Admin" else user.get("_id"),
         Type = type, Code=code, Status=status
     )
     return Response(

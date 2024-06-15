@@ -19,8 +19,8 @@ def manage_seat_types(
     event = Query(None)
     ):
     metadata = SeatTypeService(db).all(
-        Owner_ID= None if user.get("role") == "Admin" else user.get("_id"),
-        Event_ID= event,
+        Manager_ID = None if user.get("role") == "Admin" else user.get("_id"),
+        Event_ID = event,
     )
     return Response(
         message="List Seat Type",

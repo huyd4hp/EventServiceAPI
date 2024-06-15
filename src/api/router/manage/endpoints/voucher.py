@@ -18,7 +18,7 @@ def manage_voucher(
     event = Query(None)
 ):
     metadata = VoucherService(db).all(
-        Owner_ID = None if user.get("role") == "Admin" else user.get("_id"),
+        Manager_ID = None if user.get("role") == "Admin" else user.get("_id"),
         Event_ID= event,
     )
     return Response(
