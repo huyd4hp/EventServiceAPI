@@ -15,7 +15,7 @@ def view_seat(Event_ID:int,db = Depends(get_db)):
     if event is None:
         raise HTTP_404_NOT_FOUND("Event Not Found")
     seattypes = SeatTypeService(db).all(
-        Owner_ID=event['owner'],
+        Manager_ID=event['owner'],
         Event_ID=event['id']
     )
     LstSeats = []

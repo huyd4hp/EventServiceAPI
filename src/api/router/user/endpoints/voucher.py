@@ -16,7 +16,7 @@ def view_addon_services(Event_ID:int,db = Depends(get_db)):
         raise HTTP_404_NOT_FOUND("Event Not Found")
     return Response(
         metadata=VoucherService(db).all(
-            Owner_ID=event['owner'],
+            Manager_ID=event['owner'],
             Event_ID=event['id']
         )
     )
