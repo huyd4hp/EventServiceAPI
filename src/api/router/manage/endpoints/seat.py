@@ -18,15 +18,26 @@ def manage_seat(
     db = Depends(get_db),
     type = Query(None),
     code = Query(""),
-    status=Query(None)
+    status=Query(None),
+    event=Query(None)
 ):
+    Event = None
+    if event is not None:
+        Event = EventService(db).find(event)
+    if Event is None:
+        return Response(
+            message = "List Seat",
+            metadata = []
+        )
+    if user.get("role") != "Admin" and user.get("_id") != Event['owner']:
+        raise HTTP_403_FORBIDDEN("Access Forbidden")
     metadata = SeatService(db).all(
         Manager_ID = None if user.get("role") == "Admin" else user.get("_id"),
-        Type = type, Code=code, Status=status
+        Type = type, Code=code, Status=status,Event_ID=event,
     )
     return Response(
         message = "List Seat",
-        metadata = metadata,
+        metadata = metadata
     )
 @SeatRouter.get("/seat/{Seat_ID}",response_model=SeatView)
 def view_seat(

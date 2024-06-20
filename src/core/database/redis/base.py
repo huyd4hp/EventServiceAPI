@@ -23,9 +23,11 @@ class Redis:
         Client_ID = payload.get("_id")
         Session_ID = self._client.get(Client_ID)
         return Client_ID,Session_ID
-
+    def set(self,key,value):
+        self._client.set(key,value)
     @property
     def client(self):
         return self._client
     
-RedisClient = Redis(port=8100)
+RedisSesion = Redis(port=8100)
+RedisBooking = Redis(port=8111)

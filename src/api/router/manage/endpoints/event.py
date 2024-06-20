@@ -4,13 +4,13 @@ from api.service import EventService
 from api.schema import EventCreate,EventView,EventUpdate
 from core.database.mysql import get_db
 from api.response import Response,HTTP_404_NOT_FOUND,HTTP_500_INTERNAL_SERVER_ERROR,HTTP_403_FORBIDDEN,HTTP_204_NO_CONTENT
-
+from core.kafka import KafkaProducer
 EventRouter = APIRouter(
     tags=["Manage - Event"],
     dependencies=[
         Depends(ManagementUser),
         Depends(get_db)
-    ]
+    ],
 )
 @EventRouter.get("/events",response_model=EventView)
 def manage_events(
@@ -45,19 +45,25 @@ def view_event(
     
 
 @EventRouter.post("/event",response_model=EventView)
-def create_event(Information:EventCreate,user = Depends(ManagementUser), db = Depends(get_db)):
+async def create_event(Information:EventCreate,user = Depends(ManagementUser), db = Depends(get_db)):
     instance = EventService(db).add(Information,user)
+    producer = KafkaProducer(KAFKA_BOOTSTRAP_SERVERS="localhost:9092")
+    await producer.connect()
+    import json
+    await producer.sendMessage(
+        Topic = "NewEvent",
+        Message= json.dumps(instance).encode('utf-8')
+    )
     return Response(
         status=201,
         message="Event created successfully",
         metadata=instance
     )
-    
 
 @EventRouter.put("/event/{Event_ID}",response_model=EventView)
 def update_event(Information:EventUpdate,Event_ID:int,user = Depends(ManagementUser), db = Depends(get_db)):
     EventTable = EventService(db)
-    # # ---------------------------------#
+    #----------------------------#
     Event = EventTable.find(Event_ID)
     if Event is None:
         raise HTTP_404_NOT_FOUND("Event Not Found")

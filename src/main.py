@@ -1,3 +1,4 @@
+#! venv/bin/python3.12
 from fastapi import FastAPI
 import uvicorn
 from core import settings
@@ -10,7 +11,7 @@ import asyncio
 async def lifespan(app:FastAPI):
     Consumer = KafkaConsumer(
         KAFKA_BOOTSTRAP_SERVERS=settings.KAFKA_BOOTSTRAP_SERVERS,
-        TOPIC=["booking","user"],
+        TOPIC=["update_profile","booking","payment_return"]
     )
     await Consumer.connect()
     asyncio.create_task(Consumer.run())

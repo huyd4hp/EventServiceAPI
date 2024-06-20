@@ -30,12 +30,14 @@ def view_seat(Seat_ID:int, db = Depends(get_db)):
     seat = SeatService(db).find(Seat_ID)
     if seat is None:
         raise HTTP_404_NOT_FOUND("Seat Not Found")
-    seattype = SeatTypeService(db).find(seat.get("type"))
-    seat['type'] = seattype['type']
-    seat['price'] = seattype['price']
-    seat['event'] = seattype['event']
-
-    return Response(
-        metadata = seat    
-    )
+    else:
+        seattype = SeatTypeService(db).find(seat.get("type"))
+        event = EventService(db).find(seattype['event'])
+        seat['type'] = seattype['type']
+        seat['price'] = seattype['price']
+        seat['event'] = seattype['event']
+        seat['event_owner'] = event['owner']
+        return Response(
+            metadata = seat    
+        )
     

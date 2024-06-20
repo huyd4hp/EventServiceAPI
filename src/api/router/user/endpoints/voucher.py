@@ -25,7 +25,7 @@ def view_addon_services(Event_ID:int,db = Depends(get_db)):
 def view_addon_services(Voucher_ID:int,db = Depends(get_db)):
     voucher = VoucherService(db).find(Voucher_ID)
     if voucher is None:
-        raise HTTP_404_NOT_FOUND("Addon Service Not Found")
+        raise HTTP_404_NOT_FOUND("Voucher Not Found")
     return Response(
         metadata=voucher
     )

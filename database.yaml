@@ -2,11 +2,21 @@ services:
   mysql:
     image: mysql
     restart: always
-    container_name: MySQL
+    container_name: EventDB
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ./database/mysql:/var/lib/mysql
     ports:
       - ${MYSQL_PORT}:3306
-    
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: redis-stack-event
+    restart: always
+    volumes:
+      - ./database/redis-stack/:/data
+      - ./database/redis-stack/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "${REDIS_PORT}:6379"
+      - "${REDIS_INSIGHT_PORT}:8001"
+    command: ["redis-server", "--protected-mode", "no"]
