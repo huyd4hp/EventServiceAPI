@@ -1,6 +1,7 @@
 from aiokafka import AIOKafkaConsumer
 from typing import Any,List
 from core.database.mysql import async_get_db,Event,Seat,Voucher,AddonService
+from core.database.redis import RedisBooking
 import json
 
 class KafkaConsumer:
@@ -37,6 +38,7 @@ class KafkaConsumer:
             if 'voucher_id' in booking_detail:
                 voucher = db.query(Voucher).filter(Voucher.id == booking_detail['voucher_id']).first()
                 voucher.remaining -= 1
+            RedisBooking.set(seat.id, json.dumps(booking_detail))
             db.commit()
             
     async def __payment__(self,msg):
@@ -46,7 +48,10 @@ class KafkaConsumer:
             async with async_get_db() as db:
                 seat = db.query(Seat).filter(Seat.id == seat_id).first()
                 seat.status = "ORDERED"
+                booking = json.loads(RedisBooking.get(seat_id))
+                seat.owner = booking['buyer_id']
                 db.commit()
+                RedisBooking.delete(seat_id)
         if status == "Failed":
             booking_detail = json.loads(msg.value.decode())
             async with async_get_db() as db:
@@ -58,6 +63,7 @@ class KafkaConsumer:
                     addon = db.query(AddonService).filter(AddonService.id == id).first()
                     addon.available += 1
                 seat.status = "NOT_ORDERED"
+                RedisBooking.delete(seat_id)
                 db.commit()
         
     async def run(self):
