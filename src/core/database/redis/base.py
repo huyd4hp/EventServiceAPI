@@ -1,7 +1,7 @@
 import redis
 from threading import Lock
 import jwt
-from core.settings import settings
+from core.settings import ACCESS_KEY
 
 class Redis:
     _instances = {}
@@ -23,7 +23,7 @@ class Redis:
 
     def get_session(self, token: str):
         Client_ID = Session_ID = None
-        payload = jwt.decode(token, settings.ACCESS_KEY, algorithms=['HS256'])
+        payload = jwt.decode(token, ACCESS_KEY, algorithms=['HS256'])
         Client_ID = payload.get("_id")
         Session_ID = self._client.get(Client_ID)
         return Client_ID, Session_ID

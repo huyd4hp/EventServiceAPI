@@ -1,7 +1,7 @@
 #! venv/bin/python3.12
 from fastapi import FastAPI
 import uvicorn
-from core import settings
+from core import KAFKA_BOOTSTRAP_SERVERS,APP_DEBUG,APP_PORT,APP_TITLE,APP_VERSION
 from core.database.mysql import Base,Engine
 from api.router import ManageRouter,UserRouter
 from api.auth.middleware import ExceptionHandlerMiddleware
@@ -10,7 +10,7 @@ import asyncio
 # Lifespan
 async def lifespan(app:FastAPI):
     Consumer = KafkaConsumer(
-        KAFKA_BOOTSTRAP_SERVERS=settings.KAFKA_BOOTSTRAP_SERVERS,
+        KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS,
         TOPIC=["update_profile","booking","payment_return"]
     )
     await Consumer.connect()
@@ -19,9 +19,9 @@ async def lifespan(app:FastAPI):
     await Consumer.close() 
 # App
 app = FastAPI(
-    title=settings.APP_TITLE,
-    debug=settings.APP_DEBUG,
-    version=settings.APP_VERSION,
+    title=APP_TITLE,
+    debug=APP_DEBUG,
+    version=APP_VERSION,
     root_path="/api/v1",
     docs_url="/",
     lifespan=lifespan,
@@ -43,6 +43,6 @@ app.add_middleware(ExceptionHandlerMiddleware)
 if __name__ == "__main__":
     uvicorn.run(
         app="main:app",
-        port=settings.APP_PORT,
-        reload=settings.APP_DEBUG,
+        port=APP_PORT,
+        reload=APP_DEBUG,
     )
