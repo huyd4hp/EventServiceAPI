@@ -6,16 +6,15 @@ class SeatDelete(BaseModel):
         from_attributes = True
         
 class SeatCreate(BaseModel):
-    code: str
-    type: int
+    event:int
     count: Optional[int] = 1
     class Config:
         from_attributes = True
 
 class SeatView(BaseModel):
     id: int
-    code: str
-    type: int
+    event:int 
+    price: float
     status: str
     owner: Optional[str] = None
     class Config:
@@ -23,7 +22,7 @@ class SeatView(BaseModel):
 
 
 class SeatUpdate(BaseModel):
-    status: Optional[Literal["NOT_ORDERED", "ORDERED", "PENDING","CANCELLED"]] = None
+    status: Optional[Literal["NotOrdered", "Ordered", "Pending","Cancelled"]] = None
     owner: Optional[str] = None
 
     class Config:

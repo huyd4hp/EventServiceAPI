@@ -7,15 +7,16 @@ class Base(DeclarativeBase):
     pass
 
 class SeatStatus(enum.Enum):
-    NOT_ORDERED = "NotOrdered"
-    ORDERED = "Ordered"
-    PENDING = "Pending"
-    CANCELLED = "Cancelled"
+    NotOrdered = "NotOrdered"
+    Ordered = "Ordered"
+    Pending = "Pending"
+    Cancelled = "Cancelled"
 
 class Event(Base):
     __tablename__ = "Event"
     
     id = Column(BigInteger,primary_key=True,index=True,autoincrement=True)
+    image = Column(Text)
     name = Column(String(255),nullable=False) 
     about = Column(Text)
     location = Column(Text,nullable=False)
@@ -24,52 +25,17 @@ class Event(Base):
     owner = Column(String(255),nullable=False) 
     owner_name = Column(String(255),default=None)
 
-    __table_args__ = (
-        CheckConstraint('end_date >= start_date', name='event_date_check'),
-    )
-
-
-class AddonService(Base):
-    __tablename__ = "AddonService"
-
-    id = Column(BigInteger,primary_key=True,index=True,autoincrement=True)
-    name = Column(String(255),nullable=False) 
-    description = Column(Text)
-    available = Column(SmallInteger,default=-1)
-    price = Column(Float,default=0)
-    event = Column(BigInteger, ForeignKey("Event.id",ondelete="CASCADE"))
-
-    __table_args__ = (
-        UniqueConstraint("name", "event", name="ServiceEvent"),
-        CheckConstraint('price >= 0')
-    )
-
-class SeatType(Base):
-    __tablename__ = "SeatType"
-    # Column
-    id = Column(BigInteger,primary_key=True,index=True,autoincrement=True)
-    type = Column(String(10),nullable=False)
-    price = Column(Float,default = 0)
-    event = Column(BigInteger,ForeignKey("Event.id",ondelete="CASCADE"))
-    # Condition
-    __table_args__ = (
-        UniqueConstraint("type", "event", name="TypeEvent"),
-        CheckConstraint('price >= 0')
-    )
     
+
 class Seat(Base):
     # Tablename
     __tablename__ = "Seat"
     # Column
     id = Column(BigInteger,primary_key=True,autoincrement=True)
-    code = Column(String(10),nullable=False)
-    type = Column(BigInteger,ForeignKey("SeatType.id",ondelete="CASCADE"))
-    status = Column(Enum(SeatStatus),nullable=False,default=SeatStatus.NOT_ORDERED)
+    event = Column(BigInteger,ForeignKey("Event.id",ondelete="CASCADE"),nullable=False)
+    price = Column(Float,default=0.0)
+    status = Column(Enum(SeatStatus),nullable=False,default=SeatStatus.NotOrdered)
     owner = Column(String(255))    
-    # Condition
-    __table_args__ = (
-        UniqueConstraint("code", "type", name="CodeType"),
-    )
 
 class Show(Base):
     __tablename__ = "Show"

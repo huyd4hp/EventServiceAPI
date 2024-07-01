@@ -8,24 +8,17 @@ class SeatService:
     def __init__(self,db:Session):
         self.db = db
         
-    def all(self,Manager_ID:str=None,Type:int=None,Code:str="",Status:str=None,Event_ID:int=None) -> List[SeatView]:
-        '''Tất cả Seat'''
-        query = self.db.query(Seat).join(SeatType,Seat.type == SeatType.id).join(Event,Event.id == SeatType.event)
-        if Event_ID:
-            query = query.filter(Event.id == Event_ID)
+    def all(self,Manager_ID:str=None,Status:str=None,Event_ID:int=None) -> List[SeatView]:
+        query = self.db.query(Seat).join(Event,Event.id == Seat.event)
         if Manager_ID:
             query = query.filter(Event.owner == Manager_ID)
-        if Type:
-            query = query.filter(Seat.type==Type)
-        query = query.filter(
-            Seat.code.icontains(Code)
-        )
+        if Event_ID:
+            query = query.filter(Event.id == Event_ID)
         if Status:
-            query = query.filter(
-                Seat.status == Status
-            )
-        metadata = [SeatView.model_validate(obj) for obj in query.all()]
-        return jsonable_encoder(metadata)    
+            query = query.filter(Seat.status == Status)
+        metadata = [SeatView.model_validate(seat) for seat in query]
+        return jsonable_encoder(metadata)
+        
 
     def find(self,Seat_ID:int) -> SeatView | None:
         data = self.db.query(Seat).filter(Seat.id == Seat_ID).first()
@@ -33,32 +26,30 @@ class SeatService:
             return None
         metadata = SeatView.model_validate(data)
         return jsonable_encoder(metadata)    
-    
-    def add(self,SeatInfo:SeatCreate) -> List[Seat]:
-        exists = self.db.query(Seat).filter(
-            Seat.code.ilike(f"{SeatInfo.code}%"),
-            Seat.type == SeatInfo.type
-        ).all()
+
+    def add(self,SeatInfo:SeatCreate) -> List[SeatView]:
+        RandomSeat = self.db.query(Seat).filter(Seat.event == SeatInfo.event).first()
         metadata = []
-        start = len(exists) + 1
-        end = len(exists) + 1 + SeatInfo.count
-        for i in range(start,end):
-            NewSeat = Seat(
-                code = f"{SeatInfo.code}{i}",
-                type = SeatInfo.type
+        for i in range(0,SeatInfo.count):
+            instance = Seat(
+                event=SeatInfo.event,
+                price= RandomSeat.price,
             )
-            self.db.add(NewSeat)
-            metadata.append(jsonable_encoder(NewSeat))
-        self.db.commit()
-        return metadata
+            self.db.add(instance)
+            self.db.flush()
+            metadata.append(SeatView.model_validate(instance))
+        return jsonable_encoder(metadata)
+
     
     def update(self,Seat_ID:int,SeatInfo:SeatUpdate) -> SeatView:
         instance = self.db.query(Seat).filter(Seat.id == Seat_ID).first()
-        instance.status = SeatInfo.status
-        if instance.status == "NOT_ORDERED":
-            instance.owner = None
-        else:
-            instance.owner = SeatInfo.owner 
+        if SeatInfo.status:
+            instance.status = SeatInfo.status
+        if SeatInfo:
+            if SeatInfo.status == "NotOrdered":
+                instance.owner = None
+            else:
+                instance.owner = SeatInfo.owner
         self.db.commit()
         instance = self.db.query(Seat).filter(Seat.id == Seat_ID).first()
         return jsonable_encoder(SeatView.model_validate(instance))

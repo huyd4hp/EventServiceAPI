@@ -6,6 +6,6 @@ def Response(status:int=200,message:str="OK",metadata:any=None):
         content={
             "status":"Success",
             "message":message,
-            "data":metadata,
+            "metadata":metadata,
         }
     )

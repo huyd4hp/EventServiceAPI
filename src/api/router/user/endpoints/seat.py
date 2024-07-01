@@ -1,7 +1,8 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter,Depends,Query
 from core.database.mysql import get_db
-from api.service import SeatService,SeatTypeService,EventService
+from api.service import SeatService,EventService
 from api.response import Response,HTTP_404_NOT_FOUND
+from api.schema import SeatView
 SeatRouter = APIRouter(
     tags = ["View - Seat"],
     dependencies=[
@@ -9,20 +10,11 @@ SeatRouter = APIRouter(
     ]
 )
 
-@SeatRouter.get("/seats/{Event_ID}")
-def view_seat(Event_ID:int,db = Depends(get_db)):
-    event = EventService(db).find(Event_ID)
-    if event is None:
-        raise HTTP_404_NOT_FOUND("Event Not Found")
-    seattypes = SeatTypeService(db).all(
-        Manager_ID=event['owner'],
-        Event_ID=event['id']
-    )
-    LstSeats = []
-    for st in seattypes:
-        LstSeats.append(SeatService(db).all(Manager_ID=event['owner'],Type=st.get("id")))
+@SeatRouter.get("/seats/{Event_ID}",response_model=SeatView)
+def view_seat(Event_ID:int,db = Depends(get_db),status:str=Query(None)):
+    metadata = SeatService(db).all(Event_ID=Event_ID,Status=status)
     return Response(
-        metadata = LstSeats
+        metadata = metadata,
     )
 
 @SeatRouter.get("/seat/{Seat_ID}")

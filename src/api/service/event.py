@@ -1,6 +1,7 @@
-from core.database.mysql import Event,Show
+from core.database.mysql import Event,Show,Seat
 from datetime import date
 from sqlalchemy.orm import Session
+from core import APP_PORT
 from fastapi.encoders import jsonable_encoder
 from typing import List
 from api.schema import EventView,EventUpdate,EventCreate
@@ -57,7 +58,8 @@ class EventService:
             event.location = Information.location
         # Commit
         self.db.commit()
-        return jsonable_encoder(EventView.model_validate(event))    
+        return jsonable_encoder(EventView.model_validate(event))   
+
         
         
     def delete(self,id:int) -> EventView | None:
@@ -65,21 +67,34 @@ class EventService:
         self.db.delete(instance)
         self.db.commit()
         return instance.id
-            
+    
+    def upload_image(self,Event_ID:int,imageName:str):
+        event = self.db.query(Event).filter_by(id=Event_ID).first()
+        event.image = f'http://localhost:{APP_PORT}/api/v1/image/{imageName}'
+        self.db.commit()
+        return True
     
     def add(self,EventInfo:EventCreate,user:dict) -> EventView | None:
-        obj =  Event(**EventInfo.model_dump())
-        obj.owner = user.get("_id")
+        # Create Event
+        event =  Event(**EventInfo.model_dump(exclude={"price","seatCount"}))
+        event.owner = user.get("_id")
         first_name = user.get("first_name") if user.get("first_name") != None else ""
         last_name = user.get("last_name") if user.get("last_name") != None else ""
         owner_name = first_name + " " + last_name
         if owner_name == " ":
             owner_name = None
-        obj.owner_name = owner_name
-        self.db.add(obj)
+        event.owner_name = owner_name
+        self.db.add(event)
+        self.db.flush()
+        # Create Seat
+        for i in range(0,EventInfo.seatCount):
+            self.db.add(Seat(
+                event = event.id,
+                price = EventInfo.price
+            ))
         # Commit            
         self.db.commit()
-        return jsonable_encoder(EventView.model_validate(obj))    
+        return jsonable_encoder(EventView.model_validate(event))    
 
     
     

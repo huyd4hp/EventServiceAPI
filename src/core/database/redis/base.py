@@ -35,7 +35,7 @@ class Redis:
         self._client.delete(key)
 
     def get(self,key):
-        return self._client.get(key).decode()
+        return self._client.get(key)
 
     @property
     def client(self):

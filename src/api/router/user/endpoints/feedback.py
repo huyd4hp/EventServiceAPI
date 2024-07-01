@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends
 from core.database.mysql import get_db
 from api.auth.dependencies import User
-from api.service import EventService,FeedbackService,SeatService,SeatTypeService
+from api.service import EventService,FeedbackService,SeatService
 from api.schema import FeedbackCreate
 from api.response import HTTP_404_NOT_FOUND,Response,HTTP_403_FORBIDDEN
 FeedBackRouter = APIRouter(

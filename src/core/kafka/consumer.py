@@ -1,6 +1,6 @@
 from aiokafka import AIOKafkaConsumer
 from typing import Any,List
-from core.database.mysql import async_get_db,Event,Seat,Voucher,AddonService
+from core.database.mysql import async_get_db,Event,Seat,Voucher
 from core.database.redis import RedisBooking
 import json
 
@@ -30,16 +30,14 @@ class KafkaConsumer:
     async def __booking__(self,msg):
         booking_detail = json.loads(msg.value.decode())
         async with async_get_db() as db:
-            seat = db.query(Seat).filter(Seat.id == booking_detail['seat_id']).first()
+            seat = db.query(Seat).filter(Seat.id == booking_detail['seat']).first()
             seat.status = "Pending"
-            for id in booking_detail['addons_id']:
-                addon = db.query(AddonService).filter(AddonService.id == id).first()
-                addon.available -= 1
-            if 'voucher_id' in booking_detail:
-                voucher = db.query(Voucher).filter(Voucher.id == booking_detail['voucher_id']).first()
-                voucher.remaining -= 1
             RedisBooking.set(seat.id, json.dumps(booking_detail))
+            if 'voucher' in booking_detail:
+                voucher = db.query(Voucher).filter(Voucher.id == booking_detail['voucher']).first()
+                voucher.remaining = voucher.remaining - 1 
             db.commit()
+            
             
     async def __payment__(self,msg):
         status = msg.key.decode()
@@ -47,7 +45,7 @@ class KafkaConsumer:
             seat_id = msg.value.decode()
             async with async_get_db() as db:
                 seat = db.query(Seat).filter(Seat.id == seat_id).first()
-                seat.status = "ORDERED"
+                seat.status = "Ordered"
                 booking = json.loads(RedisBooking.get(seat_id))
                 seat.owner = booking['buyer_id']
                 db.commit()
@@ -55,25 +53,28 @@ class KafkaConsumer:
         if status == "Failed":
             booking_detail = json.loads(msg.value.decode())
             async with async_get_db() as db:
-                seat = db.query(Seat).filter(Seat.id == booking_detail['seat_id']).first()
-                if "voucher_id" in booking_detail:
-                    voucher = db.query(Voucher).filter(Voucher.id == booking_detail['voucher_id']).first()
+                cacheBooking = json.loads(RedisBooking.get(booking_detail['seat']).decode())
+                seat_id = cacheBooking['seat']
+                seat = db.query(Seat).filter(Seat.id == seat_id).first()
+                seat.status = "NotOrdered"
+                seat.owner = None
+                if 'voucher' in cacheBooking:
+                    voucher_id = cacheBooking['voucher']
+                    voucher = db.query(Voucher).filter(Voucher.id == voucher_id).first()
                     voucher.remaining += 1
-                for id in booking_detail['addons_id']:
-                    addon = db.query(AddonService).filter(AddonService.id == id).first()
-                    addon.available += 1
-                seat.status = "NOT_ORDERED"
-                RedisBooking.delete(seat_id)
                 db.commit()
+                
+
+
         
     async def run(self):
         async for msg in self.consumer:
+            print(msg)
             if msg.topic == "update_profile":
                 await self.__update_profile__(msg)
             if msg.topic == "booking":
                 await self.__booking__(msg)
             if msg.topic == "payment_return":
-                print(msg)
                 await self.__payment__(msg)
 
 

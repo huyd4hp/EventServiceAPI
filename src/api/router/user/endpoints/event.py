@@ -1,8 +1,10 @@
-from fastapi import APIRouter,Depends,Query
+from fastapi import APIRouter,Depends
+from fastapi import Response as FastResponse
 from core.database.mysql import get_db
-from api.service import EventService,SeatService,SeatTypeService,ShowService
+from api.service import EventService,SeatService,ShowService
 from api.schema import EventQuery
 from api.response import Response,HTTP_404_NOT_FOUND
+from core.minio import MinIOClient
 EventRouter = APIRouter(
     tags = ["View - Event"],
     dependencies=[
@@ -13,34 +15,11 @@ EventRouter = APIRouter(
 @EventRouter.get("/events")
 def list_events(Form:EventQuery = Depends(),db = Depends(get_db)):
     events = EventService(db).all()
-    start = Form.offset + (Form.page - 1) * Form.limit
-    end = start + Form.limit
-    events = events[start:end]
     for event in events:
-        event['attendates'] = 0
-        event['left'] = 0
-        event['price'] = "Free"
         event.pop('about')
-        event.pop("end_date")
-        seattypes = SeatTypeService(db).all(
-            Manager_ID = event['owner'],
-            Event_ID = event['id']
-        )
-        price= []
-        for st in seattypes:
-            price.append(st.get("price"))
-            event['attendates'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'Ordered'))
-            event['left'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'NOT_ORDERED'))
-
-        event['show'] = ShowService(db).all(Manager_ID = event['owner'],Event_ID = event['id'])
-        if len(price) == 1 and 0 in price:
-            event['price'] = "Free"
-        elif len(price) == 0:
-            event['price'] = None
-        else:
-            event['price'] = f"From {min(price)}"
-        
-        
+        event['attends'] = len(SeatService(db).all(Event_ID=event['id'],Status="Ordered"))
+        event['left'] = len(SeatService(db).all(Event_ID=event['id'],Status="NotOrdered"))
+        event['agenda'] = ShowService(db).all(Event_ID=event['id'])
     return Response(
         metadata = events
     )
@@ -50,26 +29,18 @@ def view_event(Event_ID:int,db = Depends(get_db)):
     event = EventService(db).find(Event_ID)
     if event is None:
         raise HTTP_404_NOT_FOUND("Event Not Found")
-    event['attendates'] = 0
-    event['left'] = 0
-    event['price'] = "Free"
-    seattypes = SeatTypeService(db).all(
-        Manager_ID = event['owner'],
-        Event_ID = event['id']
-    )
-    price= []
-    for st in seattypes:
-        price.append(st.get("price"))
-        event['attendates'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'Ordered'))
-        event['left'] += len(SeatService(db).all(Manager_ID= event['owner'],Type = st['id'],Status = 'NOT_ORDERED'))
-
-    event['show'] = ShowService(db).all(Manager_ID = event['owner'],Event_ID = event['id'])
-    if len(price) == 1 and 0 in price:
-        event['price'] = "Free"
-    elif len(price) == 0:
-        event['price'] = None
-    else:
-        event['price'] = f"From {min(price)}"
     return Response(
         metadata = event
     )
+
+@EventRouter.get('/image/{imageName}')
+def view_image(imageName:str):
+    image = MinIOClient.getImage(imageName)
+    if not image:
+        return Response(
+            status=404,
+            message="Image Not Found"
+        )
+    image_data = image.read()
+    image_type = image.headers.get('Content-Type', 'image/jpeg')
+    return FastResponse(content=image_data, media_type=image_type)
