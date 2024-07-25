@@ -2,3 +2,4 @@ venv
 /database
 __pycache__
 /minio
+.env
