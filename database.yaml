@@ -1,0 +1,49 @@
+services:
+  mysql-master:
+    image: mysql
+    restart: always
+    hostname: mysql.emaster
+    container_name: EventDatabase-Master
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./database/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - EventDatabaseNetwork
+
+  redis-booking:
+    image: redis:7.2.5
+    container_name: RedisBooking
+    hostname: ${REDIS_BOOKING_HOST}
+    restart: always
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./database/redis/:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      - EventDatabaseNetwork
+  minio:
+    image: minio/minio
+    hostname: minio.emaster
+    container_name: EventBackground
+    restart: always
+    volumes:
+      - ./minio:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: rootMINIO
+    command: server --console-address ":9001" /data
+    networks:
+      - EventDatabaseNetwork
+
+networks:
+  EventDatabaseNetwork:
+    external: true
+    driver: bridge

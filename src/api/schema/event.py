@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel
+from pydantic import BaseModel,model_validator
 from fastapi import Query
 from typing import Optional
 
@@ -15,6 +15,7 @@ class EventView(BaseModel):
     owner_name: Optional[str] = None
     class Config:
         from_attributes = True
+
 
 class EventUpdate(BaseModel):
     name: Optional[str] = None

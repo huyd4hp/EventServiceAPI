@@ -1,7 +1,7 @@
 from minio import Minio
 from typing import List
 from fastapi import File
-from core import MINIO_ACCESS_KEY,MINIO_PORT,MINIO_SECRET_KEY
+from core import MINIO_ACCESS_KEY,MINIO_PORT,MINIO_SECRET_KEY,MINIO_HOST
 from io import BytesIO
 class MinIO:
     def __init__(self,access_key:str,secret_key:str,secure:bool=False,endpoint:str='127.0.0.1',port:int=9000,buckets:List[str]=[]):
@@ -44,6 +44,7 @@ class MinIO:
 MinIOClient = MinIO(
     access_key=MINIO_ACCESS_KEY,
     secret_key=MINIO_SECRET_KEY,
+    endpoint=MINIO_HOST,
     port=MINIO_PORT,
     buckets=['image']
 )

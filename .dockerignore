@@ -1,0 +1,10 @@
+database
+minio
+nginx
+__pycache__
+.gitignore
+docker-compose.yaml
+erd.png
+README.md
+.env    
+venv

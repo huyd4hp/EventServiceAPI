@@ -6,6 +6,7 @@ from core.database.mysql import get_db
 import json
 from api.response import Response,HTTP_404_NOT_FOUND,HTTP_500_INTERNAL_SERVER_ERROR,HTTP_403_FORBIDDEN,HTTP_204_NO_CONTENT
 from core.kafka import KafkaProducer
+from core.settings import KAFKA_BOOTSTRAP_SERVERS
 from core.minio import MinIOClient
 EventRouter = APIRouter(
     tags=["Manage - Event"],
@@ -49,7 +50,7 @@ def view_event(
 @EventRouter.post("/event",response_model=EventView)
 async def create_event(Information:EventCreate,user = Depends(ManagementUser), db = Depends(get_db)):
     instance = EventService(db).add(Information,user)
-    producer = KafkaProducer(KAFKA_BOOTSTRAP_SERVERS="localhost:9092")
+    producer = KafkaProducer(KAFKA_BOOTSTRAP_SERVERS)
     await producer.connect()
     await producer.sendMessage(
         Topic = "NewEvent",

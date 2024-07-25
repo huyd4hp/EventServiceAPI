@@ -1,0 +1,59 @@
+services:
+  api.event:
+    image: event-service
+    container_name: api.event
+    hostname: api.event
+    environment:
+      APP_MODE: ${APP_MODE}
+      APP_PORT: ${APP_PORT_1}
+      APP_HOST: api.event
+      VAULT_HOST: ${VAULT_HOST}
+      VAULT_TOKEN: ${VAULT_TOKEN}
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+    command: fastapi run src/main.py --host 0.0.0.0 --port ${APP_PORT_1}
+    networks:
+      - EventDatabaseNetwork
+      - AuthDatabaseNetwork
+      - ServiceNetwork
+
+  api.sevent:
+    image: event-service
+    container_name: api.sevent
+    hostname: api.sevent
+    environment:
+      APP_MODE: ${APP_MODE}
+      APP_PORT: ${APP_PORT_2}
+      APP_HOST: api.sevent
+      VAULT_HOST: ${VAULT_HOST}
+      VAULT_TOKEN: ${VAULT_TOKEN}
+      CONSUL_HOST: ${CONSUL_HOST}
+      CONSUL_PORT: ${CONSUL_PORT}
+    command: fastapi run src/main.py --host 0.0.0.0 --port ${APP_PORT_2}
+    networks:
+      - EventDatabaseNetwork
+      - AuthDatabaseNetwork
+      - ServiceNetwork
+  nginx:
+    image: nginx:1.27.0
+    container_name: EventService
+    hostname: nginx.event
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - ServiceNetwork
+    depends_on:
+      - api.event
+      - api.sevent
+
+networks:
+  ServiceNetwork:
+    external: true
+    driver: bridge
+  EventDatabaseNetwork:
+    external: true
+    driver: bridge
+  AuthDatabaseNetwork:
+    external: true
+    driver: bridge

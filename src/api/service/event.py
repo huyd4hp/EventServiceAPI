@@ -70,7 +70,7 @@ class EventService:
     
     def upload_image(self,Event_ID:int,imageName:str):
         event = self.db.query(Event).filter_by(id=Event_ID).first()
-        event.image = f'http://localhost:{APP_PORT}/api/v1/image/{imageName}'
+        event.image = f'{imageName}'
         self.db.commit()
         return True
     
